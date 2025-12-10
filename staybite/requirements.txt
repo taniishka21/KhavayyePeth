@@ -1,0 +1,18 @@
+# Django framework
+Django>=4.2
+
+# Data analysis
+pandas
+numpy
+
+# For handling file uploads (if any)
+python-decouple
+
+# Optional (for production or deployment)
+gunicorn          # WSGI server for deployment
+whitenoise        # Serve static files in production
+
+# For PostgreSQL (optional DB)
+psycopg2-binary
+
+# Power BI embed (manual iframe, no package needed)

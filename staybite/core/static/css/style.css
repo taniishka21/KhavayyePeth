@@ -1,0 +1,150 @@
+/*
+ * Custom CSS for Khavayye Peth
+ * Theme based on the logo: Dark Blue (#182234) and Gold (#e5b85a)
+ */
+
+:root {
+    --primary-color: #e5b85a; /* Gold from the logo */
+    --secondary-color: #182234; /* Dark Blue from the logo */
+    --font-family: 'Poppins', sans-serif; /* A professional-looking font */
+}
+
+body {
+    background-color: #f8f9fa; /* A light grey for contrast */
+    font-family: var(--font-family);
+    color: #212529;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.navbar .nav-link,
+.navbar-brand {
+    color: #fff !important;
+    font-weight: 500;
+    transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+    text-shadow: 0 0 10px rgba(229, 184, 90, 0.8), 0 0 20px rgba(229, 184, 90, 0.6);
+}
+
+.navbar .nav-link.active {
+    color: var(--primary-color) !important;
+    text-shadow: 0 0 10px rgba(229, 184, 90, 0.8), 0 0 20px rgba(229, 184, 90, 0.6);
+}
+
+.navbar-toggler-icon {
+    filter: invert(1);
+}
+
+/* Button styles */
+.btn-warning {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--secondary-color);
+    font-weight: bold;
+    transition: transform 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.btn-warning:hover {
+    background-color: #c99e4c; /* A slightly darker gold for hover effect */
+    border-color: #c99e4c;
+    color: #fff;
+    transform: scale(1.05);
+}
+
+.btn-outline-warning {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
+}
+
+/* Card styles */
+.card {
+    border: none;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0; /* Initially hidden for animation */
+}
+
+.card:hover {
+    transform: translateY(-8px); /* A more pronounced lift */
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Search bar styles */
+.input-group-text,
+.form-control {
+    border-right: none !important;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(229, 184, 90, 0.25);
+    border-color: var(--primary-color);
+}
+
+/* Other custom styles */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--secondary-color);
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+    color: #c99e4c;
+}
+
+.navbar {
+    background-color: var(--secondary-color) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+}
+
+.navbar .nav-link,
+.navbar-brand {
+    color: #fff !important;
+    font-weight: 500;
+    transition: color 0.3s ease-in-out, text-shadow 0.3s ease-in-out;
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-color) !important;
+    text-shadow: 0 0 10px rgba(229, 184, 90, 0.8), 0 0 20px rgba(229, 184, 90, 0.6);
+}
+
+.navbar .nav-link.active {
+    color: var(--primary-color) !important;
+    text-shadow: 0 0 10px rgba(229, 184, 90, 0.8), 0 0 20px rgba(229, 184, 90, 0.6);
+}
+
+.navbar-toggler-icon {
+    filter: invert(1);
+}

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile | Khavayye Peth{% endblock %}
+
+{% block head_extra %}
+<!-- Add Bootstrap Icons CSS to ensure icons are available -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+    /* Add a little style to make the liked heart stand out */
+    .liked-heart {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Main Profile Content -->
+<main class="py-5 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-sm rounded-4 border-0 p-4">
+                    <div class="card-body text-center">
+                        <div class="mb-4">
+                            <!-- Using a placeholder image for now, you can replace it with a user-uploaded one -->
+                            <img src="{% static 'images/user.png' %}" alt="User Profile" class="rounded-circle mb-3" style="width: 100px; height: 100px;">
+                        </div>
+                        <h1 class="card-title fw-bold">{{ user.username }}</h1>
+                        <p class="text-muted">{{ user.email }}</p>
+                        <p class="text-muted mb-0">Your unique ID:</p>
+                        <p class="text-break fw-bold" id="user-id-display"></p>
+                        <hr>
+                        <div class="text-start">
+                            <p class="mb-1"><strong>First Name:</strong> {{ user.first_name|default:"N/A" }}</p>
+                            <p class="mb-1"><strong>Last Name:</strong> {{ user.last_name|default:"N/A" }}</p>
+                            <p><strong>Member Since:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'edit_profile' %}" class="btn btn-warning w-100">Edit Profile</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <h3 class="fw-bold text-center mb-4">My Liked Restaurants</h3>
+                    <!-- Container for liked restaurants -->
+                    <div class="row g-4" id="liked-restaurants-list">
+                        <!-- Liked restaurant cards will be dynamically added here -->
+                        <div class="col-12 text-center text-muted" id="loading-message">
+                            <p>Loading your liked restaurants...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    let auth;
+    let db;
+    let userId;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const likedListElement = document.getElementById('liked-restaurants-list');
+        const loadingMessageContainer = document.getElementById('loading-message');
+
+        // Firebase Initialization and Auth
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+
+        if (Object.keys(firebaseConfig).length > 0) {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    // Display user ID after successful sign-in
+                    document.getElementById('user-id-display').textContent = userId;
+                    fetchLikedRestaurants();
+                } else {
+                    try {
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Error signing in:", error);
+                        if (loadingMessageContainer) {
+                            loadingMessageContainer.innerHTML = "Error loading user profile. Please try again.";
+                        }
+                    }
+                }
+            });
+        }
+
+        // Function to fetch and display liked restaurants
+        function fetchLikedRestaurants() {
+            if (!userId || !db) {
+                if (loadingMessageContainer) {
+                    loadingMessageContainer.innerHTML = "Error: User not authenticated.";
+                }
+                return;
+            }
+            
+            // Set up a real-time listener to the Firestore collection
+            const likedRestaurantsRef = collection(db, `artifacts/${appId}/users/${userId}/liked_restaurants`);
+            onSnapshot(likedRestaurantsRef, (snapshot) => {
+                likedListElement.innerHTML = ''; // Clear previous content
+
+                if (snapshot.empty) {
+                    likedListElement.innerHTML = `
+                        <div class="col-12 text-center">
+                            <div class="alert alert-info" role="alert">
+                                <p class="mb-0">You haven't liked any restaurants yet! Find some favorites on the <a href="{% url 'explore' %}" class="alert-link">Explore</a> page.</p>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const restaurant = doc.data();
+                    const cardHtml = `
+                        <div class="col-12 col-md-6">
+                            <div class="card h-100 shadow-sm border-0 rounded-4">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h5 class="card-title fw-bold text-truncate me-2">${restaurant.name}</h5>
+                                        <span class="liked-heart"><i class="bi bi-heart-fill"></i></span>
+                                    </div>
+                                    <p class="card-text text-muted mb-2">
+                                        <small>
+                                            <i class="bi bi-geo-alt-fill"></i> ${restaurant.location}
+                                        </small>
+                                    </p>
+                                    <hr>
+                                    <p class="card-text">
+                                        <small class="text-muted">${restaurant.cuisine}</small>
+                                    </p>
+                                </div>
+                                <div class="card-footer bg-white border-0 text-center">
+                                    <a href="${restaurant.link}" class="btn btn-warning btn-sm w-100 rounded-pill">View on Zomato</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    likedListElement.innerHTML += cardHtml;
+                });
+            }, (error) => {
+                console.error("Error fetching liked restaurants:", error);
+                likedListElement.innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger" role="alert">
+                            <p class="mb-0">There was an error loading your liked restaurants. Please try again later.</p>
+                        </div>
+                    </div>`;
+            });
+        }
+    });
+</script>
+{% endblock %}

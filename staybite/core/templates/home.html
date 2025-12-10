@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Khavayye Peth{% endblock %}
+
+{% block head_extra %}
+<style>
+    h5{
+      color:black
+    }
+    h3{
+      color: black;
+    }
+    p{
+      color: black;
+    }
+    .carousel-item img {
+        max-height: 500px;
+        object-fit: cover;
+        object-position: center;
+    }
+  
+    @media (max-width: 768px) {
+        .carousel-item img {
+            max-height: 300px;
+        }
+    }
+
+    /* Added caption background styling */
+    .carousel-caption {
+        background: rgba(255, 255, 255, 0.7); /* Semi-transparent white */
+        backdrop-filter: blur(5px); /* Frosted glass effect */
+        border-radius: 15px;
+        padding: 20px;
+        right: 15%;
+        left: 15%;
+        bottom: 20%;
+    }
+    
+    /* Darker background for better readability on light images */
+    .carousel-caption h5, 
+    .carousel-caption p {
+        color: #333 !important;
+        text-shadow: none;
+    }
+
+    .feature-card {
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        cursor: pointer;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .fade-in-up.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="{% static 'images/slide1.png' %}" class="d-block w-100" alt="Food 1">
+            <div class="carousel-caption d-none d-md-block">
+                <h5 class="fade-in-up">Discover Amazing Restaurants</h5>
+                <p class="fade-in-up" style="transition-delay: 0.2s;">Find top-rated spots near you.</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'images/slide2.png' %}" class="d-block w-100" alt="Food 2">
+            <div class="carousel-caption d-none d-md-block">
+                <h5 class="fade-in-up">Share Your Experience</h5>
+                <p class="fade-in-up" style="transition-delay: 0.2s;">Write reviews and help others choose.</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="{% static 'images/slide3.png' %}" class="d-block w-100" alt="Food 3">
+            <div class="carousel-caption d-none d-md-block">
+                <h5 class="fade-in-up">Data-Driven Food Insights</h5>
+                <p class="fade-in-up" style="transition-delay: 0.2s;">Analyze ratings and trends.</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<div class="container py-5">
+    <div class="text-center mb-5 fade-in-up">
+        <h2 class="display-5 fw-bold">Why Khavayye Peth?</h2>
+        <p class="lead text-muted">A few of the features that make our platform unique.</p>
+    </div>
+    <div class="row g-4 justify-content-center">
+       
+        <div class="col-md-4 col-lg-3 d-flex align-items-stretch">
+            <div class="card shadow-sm border-0 rounded-4 feature-card fade-in-up" data-delay="0s">
+                <img src="{% static 'images/discover.png' %}" class="card-img-top" alt="Discover Restaurants">
+                <div class="card-body text-center">
+                    <h3 class="card-title fw-bold">Discover Restaurants</h3>
+                    <p class="card-text">Find the best-rated restaurants in your area.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 col-lg-3 d-flex align-items-stretch">
+            <div class="card shadow-sm border-0 rounded-4 feature-card fade-in-up" data-delay="0.2s">
+                <img src="{% static 'images/reviews.png' %}" class="card-img-top" alt="Write Reviews">
+                <div class="card-body text-center">
+                    <h3 class="card-title fw-bold">Write Reviews</h3>
+                    <p class="card-text">Share your dining experiences with others.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 col-lg-3 d-flex align-items-stretch">
+            <div class="card shadow-sm border-0 rounded-4 feature-card fade-in-up" data-delay="0.4s">
+                <img src="{% static 'images/analytics.png' %}" class="card-img-top" alt="Data Insights">
+                <div class="card-body text-center">
+                    <h3 class="card-title fw-bold">Data Insights</h3>
+                    <p class="card-text">Check food trends and rating analytics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const element = entry.target;
+                    const delay = element.getAttribute('data-delay') || '0s';
+                    element.style.transitionDelay = delay;
+                    element.classList.add('is-visible');
+                    observer.unobserve(element);
+                }
+            });
+        }, {
+           
+            rootMargin: '0px 0px -50px 0px'
+        });
+
+        const animatedElements = document.querySelectorAll('.fade-in-up');
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+    });
+</script>
+
+{% endblock %}

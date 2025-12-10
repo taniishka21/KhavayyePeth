@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile | Khavayye Peth{% endblock %}
+
+{% block content %}
+
+
+    <main class="py-5 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow-sm rounded-4 border-0 p-4">
+                        <div class="card-body">
+                            <h2 class="card-title fw-bold text-center mb-4">Edit Profile</h2>
+                            <form method="POST" action="{% url 'edit_profile' %}">
+                                {% csrf_token %}
+                                
+                                <!-- The form fields will be rendered automatically here -->
+                                {{ form.as_p }}
+
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-warning btn-lg btn-animated">Save Changes</button>
+                                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}

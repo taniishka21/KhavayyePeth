@@ -1,0 +1,189 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Khavayye Peth{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <style>
+   /* Floating Chat Button */
+#chatbot-fab {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ffc107;
+    color: white;
+    font-size: 28px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease;
+}
+
+#chatbot-fab:hover {
+    transform: scale(1.1);
+}
+
+/* Chat Panel */
+#chatbot-panel {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 320px;
+    height: 420px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9998;
+}
+
+#chatbot-panel .cb-header {
+    background: #ffc107;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cb-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.cb-form {
+    display: flex;
+    border-top: 1px solid #ddd;
+}
+
+.cb-form input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    outline: none;
+}
+
+.cb-form button {
+    background: #ffc107;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+
+<body>
+{% include 'navbar.html' %}
+    <!-- Main Content -->
+    <div class="container mt-4">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    {% block content %}{% endblock %}
+
+ <!-- Floating Chat Button -->
+<div id="chatbot-fab" title="Chat with Khavayye AI">💬</div>
+
+<!-- Chat Panel -->
+<div id="chatbot-panel" aria-hidden="true">
+  <div class="cb-header">
+    <div>Khavayye AI</div>
+    <button id="cb-close" aria-label="Close">✕</button>
+  </div>
+
+  <div id="cb-messages" class="cb-messages">
+    <div class="cb-msg cb-bot">
+      Hello! I'm Khavayye Peth Assistant — ask me about Pune restaurants, cuisines, or areas. 😋
+    </div>
+  </div>
+
+  <form id="cb-form" class="cb-form" autocomplete="off">
+    <input id="cb-input" type="text" placeholder="Type your message…" required />
+    <button type="submit" id="cb-send">Send</button>
+  </form>
+</div>
+
+<script>
+        // Use a JS array to store chat history
+        let chatHistory = [];
+        
+        // Helper function to add a message to the UI
+        function addMessageToUI(sender, text) {
+            const box = document.getElementById("cb-messages");
+            const senderClass = sender === "user" ? "cb-user" : "cb-bot";
+            box.innerHTML += `<div class="cb-msg ${senderClass}"><b>${sender}:</b> ${text}</div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Open/close chatbot panel
+        document.getElementById("chatbot-fab").onclick = () => {
+            const p = document.getElementById("chatbot-panel");
+            p.style.display = (p.style.display === "flex" ? "none" : "flex");
+        };
+        document.getElementById("cb-close").onclick = () => {
+            document.getElementById("chatbot-panel").style.display = "none";
+        };
+
+        // Send message
+        document.getElementById("cb-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const input = document.getElementById("cb-input");
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addMessageToUI("user", msg);
+            chatHistory.push({ role: "user", text: msg });
+            input.value = "";
+
+            try {
+                const res = await fetch("/chatbot/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg, history: chatHistory })
+                });
+                const data = await res.json();
+                const reply = data.reply || data.error || "No reply";
+                
+                addMessageToUI("bot", reply);
+                chatHistory.push({ role: "bot", text: reply });
+
+            } catch (err) {
+                addMessageToUI("bot", "Error sending message.");
+            }
+        });
+    </script>
+
+  {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

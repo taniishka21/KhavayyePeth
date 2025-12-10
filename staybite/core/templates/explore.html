@@ -1,0 +1,336 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Restaurants | Khavayye Peth{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Styling for the like button */
+    .like-button {
+        background: none;
+        border: none;
+        color: #ddd;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.2s ease-in-out;
+    }
+    .like-button.liked {
+        color: var(--primary-color);
+    }
+    /* Style for disabled buttons to indicate they are not ready */
+    .like-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    .like-button:not(:disabled):hover {
+        color: var(--primary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card shadow-sm border-0 rounded-4 p-4 sticky-top" style="top: 80px;">
+                <h4 class="mb-4">Filters</h4>
+                <div class="mb-3">
+                    <label for="locationFilter" class="form-label fw-bold">Location</label>
+                    <select class="form-select" id="locationFilter">
+                        <option value="">All Locations</option>
+                        {% for location in locations %}
+                        <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sort by</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="sortOptions" id="sortRating" value="rating_desc">
+                        <label class="form-check-label" for="sortRating">
+                            Rating: High to Low
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="sortOptions" id="sortCost" value="cost_desc">
+                        <label class="form-check-label" for="sortCost">
+                            Price: High to Low
+                        </label>
+                    </div>
+                </div>
+                <button id="applyFiltersBtn" class="btn btn-warning w-100 mt-2">Apply Filters</button>
+                <button id="clearFiltersBtn" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">Explore Pune's Restaurants</h1>
+                <p class="lead text-muted">Find your next favorite meal from our curated list.</p>
+            </div>
+
+            <div class="row justify-content-center mb-4">
+                <div class="col-lg-8">
+                    <div class="input-group input-group-lg shadow-sm rounded-pill overflow-hidden">
+                        <span class="input-group-text bg-white border-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#6c757d" class="bi bi-search" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.085.12l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.01 1.01 0 0 0-.12-.085zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="restaurant-search" class="form-control border-0" placeholder="Search by name, cuisine, or location..." aria-label="Search">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="restaurant-list">
+                {% for restaurant in restaurants %}
+                <div class="col restaurant-card" data-search-term="{{ restaurant.rest_name|lower }} {{ restaurant.cuisine|lower }} {{ restaurant.loc|lower }}"
+                    data-location="{{ restaurant.loc }}" data-rating="{{ restaurant.delivery_rating }}" data-cost="{{ restaurant.cost|default_if_none:'Rs. 0' }}"
+                    data-restaurant-link="{{ restaurant.link }}">
+                    <div class="card h-100 shadow-sm border-0 rounded-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="card-title fw-bold text-truncate me-2">{{ restaurant.rest_name }}</h5>
+                                <button class="like-button" onclick="toggleLike(this, '{{ restaurant.link }}')" disabled>
+                                    <i class="bi bi-heart"></i>
+                                </button>
+                            </div>
+                            <p class="card-text text-muted mb-2">
+                                <small>
+                                    <i class="bi bi-geo-alt-fill"></i> {{ restaurant.loc }}
+                                </small>
+                            </p>
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-star-fill"></i> {{ restaurant.delivery_rating }}
+                                    </span>
+                                    <small class="text-muted ms-2">{{ restaurant.delivery_reviews }} Reviews</small>
+                                </div>
+                                <span class="fw-bold text-success">{{ restaurant.cost }}</span>
+                            </div>
+                            <p class="card-text">
+                                <small class="text-muted">{{ restaurant.cuisine }}</small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white border-0 text-center">
+                            <a href="{{ restaurant.link }}" class="btn btn-warning btn-sm w-100 rounded-pill">View Restaurant</a>
+                        </div>
+                        <div class="modal fade" id="likeModal" tabindex="-1" aria-labelledby="likeModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="likeModalLabel">Authentication Required</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Please log in or sign up to like restaurants.
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <a href="{% url 'login' %}" class="btn btn-warning">Login</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center text-muted">
+                    <p>No restaurants found.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    let auth;
+    let db;
+    let userId;
+    
+    // Flag to check if authentication is ready
+    let isAuthReady = false;
+
+    // Firebase Initialization and Auth
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : '';
+
+    // Function to handle liking and unliking
+    window.toggleLike = async function(button, restaurantLink) {
+        if (!isAuthReady || !userId) {
+            console.warn('Authentication not ready or user not logged in.');
+            return;
+        }
+
+        const restaurantId = restaurantLink.replace(/[^a-zA-Z0-9]/g, '');
+        const likeRef = doc(db, `artifacts/${appId}/users/${userId}/liked_restaurants`, restaurantId);
+        const icon = button.querySelector('i');
+
+        if (icon.classList.contains('bi-heart-fill')) {
+            try {
+                await deleteDoc(likeRef);
+            } catch (error) {
+                console.error("Error unliking restaurant:", error);
+            }
+        } else {
+            try {
+                const card = button.closest('.restaurant-card');
+                const restaurantName = card.querySelector('.card-title').textContent;
+                const restaurantLocation = card.querySelector('.card-text i').nextSibling.textContent.trim();
+                const restaurantCuisine = card.querySelector('.card-text small').textContent;
+
+                await setDoc(likeRef, {
+                    name: restaurantName,
+                    location: restaurantLocation,
+                    cuisine: restaurantCuisine,
+                    link: restaurantLink,
+                    timestamp: new Date()
+                });
+            } catch (error) {
+                console.error("Error liking restaurant:", error);
+            }
+        }
+    }
+
+    // Function to fetch liked restaurants and update the UI
+    function fetchLikedRestaurants() {
+        if (!userId || !db) return;
+
+        const likedRestaurantsRef = collection(db, `artifacts/${appId}/users/${userId}/liked_restaurants`);
+        onSnapshot(likedRestaurantsRef, (snapshot) => {
+            const likedLinks = new Set();
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.link) {
+                    likedLinks.add(data.link);
+                }
+            });
+
+            // Update all buttons on the page
+            document.querySelectorAll('.restaurant-card').forEach(card => {
+                const link = card.getAttribute('data-restaurant-link');
+                const button = card.querySelector('.like-button');
+                const icon = button.querySelector('i');
+                if (likedLinks.has(link)) {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    button.classList.add('liked');
+                } else {
+                    icon.classList.remove('bi-heart-fill');
+                    icon.classList.add('bi-heart');
+                    button.classList.remove('liked');
+                }
+            });
+        });
+    }
+
+    if (Object.keys(firebaseConfig).length > 0) {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                isAuthReady = true;
+                // Enable like buttons after successful sign-in
+                document.querySelectorAll('.like-button').forEach(button => button.disabled = false);
+                // Call the function to fetch and update liked status
+                fetchLikedRestaurants(); 
+            } else {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (error) {
+                    console.error("Error signing in:", error);
+                }
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('restaurant-search');
+        const locationFilter = document.getElementById('locationFilter');
+        const sortOptions = document.getElementsByName('sortOptions');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        const restaurantList = document.getElementById('restaurant-list');
+        // Store all the original restaurant cards to use as the source of truth
+        const allRestaurantCards = Array.from(document.querySelectorAll('.restaurant-card'));
+
+        function filterAndSortRestaurants() {
+            // Get current filter and sort criteria
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const selectedLocation = locationFilter.value;
+            const selectedSort = Array.from(sortOptions).find(radio => radio.checked)?.value || 'none';
+
+            // Filter the original list of all cards
+            let filteredAndSortedCards = allRestaurantCards.filter(card => {
+                const cardSearchTerm = card.getAttribute('data-search-term');
+                const cardLocation = card.getAttribute('data-location');
+
+                // Check if the card matches the search term and location filter
+                const matchesSearch = !searchTerm || cardSearchTerm.includes(searchTerm);
+                const matchesLocation = !selectedLocation || cardLocation === selectedLocation;
+
+                return matchesSearch && matchesLocation;
+            });
+
+            // Sort the filtered cards
+            filteredAndSortedCards.sort((a, b) => {
+                const aRating = parseFloat(a.getAttribute('data-rating'));
+                const bRating = parseFloat(b.getAttribute('data-rating'));
+                
+                // Extract cost as a number, handling 'Rs. ' prefix
+                const aCost = parseFloat(a.getAttribute('data-cost').replace('Rs. ', ''));
+                const bCost = parseFloat(b.getAttribute('data-cost').replace('Rs. ', ''));
+
+                if (selectedSort === 'rating_desc') {
+                    return bRating - aRating;
+                } else if (selectedSort === 'cost_desc') {
+                    return bCost - aCost;
+                }
+                return 0; // No sorting
+            });
+
+            // Clear the existing list and re-append the filtered/sorted cards
+            restaurantList.innerHTML = '';
+            if (filteredAndSortedCards.length === 0) {
+                const noResultsDiv = document.createElement('div');
+                noResultsDiv.className = 'col-12 text-center text-muted';
+                noResultsDiv.innerHTML = '<p>No restaurants found.</p>';
+                restaurantList.appendChild(noResultsDiv);
+            } else {
+                filteredAndSortedCards.forEach(card => restaurantList.appendChild(card));
+            }
+        }
+
+        // Event listeners for search, filter, and clear buttons
+        applyFiltersBtn.addEventListener('click', filterAndSortRestaurants);
+        searchInput.addEventListener('input', filterAndSortRestaurants);
+
+        clearFiltersBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            locationFilter.value = '';
+            sortOptions.forEach(radio => radio.checked = false);
+            filterAndSortRestaurants(); // Re-apply filters with cleared values
+        });
+        
+        // Initial call to display all cards correctly on page load
+        filterAndSortRestaurants();
+    });
+</script>
+{% endblock %}

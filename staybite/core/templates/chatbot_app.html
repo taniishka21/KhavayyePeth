@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* --- Chatbot Container --- */
+    .chatbot-container {
+        width: 350px;
+        height: 500px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: fixed;
+        bottom: 80px;
+        right: 30px;
+        z-index: 9999;
+    }
+
+    /* --- Chat Messages --- */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+    .message {
+        padding: 8px 12px;
+        margin: 5px 0;
+        border-radius: 10px;
+        max-width: 80%;
+        word-wrap: break-word;
+    }
+    .user-message {
+        background: #007bff;
+        color: #fff;
+        align-self: flex-end;
+    }
+    .bot-message {
+        background: #eaeaea;
+        color: #333;
+        align-self: flex-start;
+    }
+
+    /* --- Input Area --- */
+    .chat-input {
+        display: flex;
+        border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+        flex: 1;
+        border: none;
+        padding: 10px;
+        outline: none;
+    }
+    .chat-input button {
+        background: #007bff;
+        border: none;
+        color: white;
+        padding: 10px 15px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="chatbot-container" id="chatbotContainer">
+    <div class="chat-messages" id="chatMessages">
+        <!-- Messages will be added here dynamically -->
+    </div>
+    <form class="chat-input" id="chatForm">
+        {% csrf_token %}
+        <input type="text" id="userMessage" placeholder="Type your message..." required>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const chatForm = document.getElementById("chatForm");
+    const input = document.getElementById("userMessage");
+    const messages = document.getElementById("chatMessages");
+
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+
+        // Show user message
+        const userMsg = document.createElement("div");
+        userMsg.classList.add("message", "user-message");
+        userMsg.textContent = message;
+        messages.appendChild(userMsg);
+
+        // Clear input
+        input.value = "";
+
+        // Call backend (POST request)
+        fetch("/chatbot-response/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: "prompt=" + encodeURIComponent(message)
+        })
+        .then((res) => res.json())
+        .then((data) => {
+            const botMsg = document.createElement("div");
+            botMsg.classList.add("message", "bot-message");
+            botMsg.textContent = data.response || "No reply from bot.";
+            messages.appendChild(botMsg);
+            messages.scrollTop = messages.scrollHeight;
+        })
+        .catch((err) => {
+            const botMsg = document.createElement("div");
+            botMsg.classList.add("message", "bot-message");
+            botMsg.textContent = "Error: " + err.message;
+            messages.appendChild(botMsg);
+        });
+    });
+});
+</script>
+{% endblock %}

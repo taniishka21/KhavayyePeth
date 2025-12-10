@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard | Khavayye Peth{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23e2e8f0' fill-opacity='0.4'%3E%3Cpath fill-rule='evenodd' d='M0 10l10-10 10 10-10 10zM10 20l10-10-10-10L0 10z'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .tab-button.active {
+            background-color: #ffc107;
+            color: #212529;
+            font-weight: bold;
+        }
+        .dashboard-page {
+            margin-bottom: 2rem; /* Add some space between the dashboard images */
+        }
+    </style>
+    <div class="flex flex-col items-center min-h-screen p-6 bg-gray-100 bg-pattern">
+        <div class="container mx-auto max-w-screen-xl">
+
+            <!-- Dashboard Header Section -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800">
+                    Restaurant Analytics Dashboard
+                </h1>
+                <p class="text-lg text-gray-600 mt-2">
+                    Here's a glimpse into the food trends and data insights of Pune's culinary scene.
+                </p>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="bg-white rounded-3xl shadow-lg p-6 md:p-10">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Power BI Report</h2>
+                
+                <!-- Tabbed navigation for multi-page dashboard -->
+                <div class="flex justify-center mb-4 space-x-2">
+                    <button id="page1-tab" class="tab-button bg-gray-200 text-gray-800 py-2 px-4 rounded-full transition-colors active" onclick="scrollToPage('page1')">Overview Dashboard</button>
+                    <button id="page2-tab" class="tab-button bg-gray-200 text-gray-800 py-2 px-4 rounded-full transition-colors" onclick="scrollToPage('page2')">Rating Analysis</button>
+                    <button id="page3-tab" class="tab-button bg-gray-200 text-gray-800 py-2 px-4 rounded-full transition-colors" onclick="scrollToPage('page3')">Pricing and cost insights</button>
+                    <button id="page4-tab" class="tab-button bg-gray-200 text-gray-800 py-2 px-4 rounded-full transition-colors" onclick="scrollToPage('page4')">Location Insights</button>
+                    <button id="page5-tab" class="tab-button bg-gray-200 text-gray-800 py-2 px-4 rounded-full transition-colors" onclick="scrollToPage('page5')">Recommendation Simulation</button>
+                </div>
+
+                <!-- Dashboard images for each page -->
+                <div id="page1" class="dashboard-page">
+                    <img src="{% static 'images/dashboard/dashboard_page1.png' %}" alt="Dashboard Page 1" class="w-full h-auto rounded-xl">
+                </div>
+                <div id="page2" class="dashboard-page">
+                    <img src="{% static 'images/dashboard/dashboard_page2.png' %}" alt="Dashboard Page 2" class="w-full h-auto rounded-xl">
+                </div>
+                <div id="page3" class="dashboard-page">
+                    <img src="{% static 'images/dashboard/dashboard_page3.png' %}" alt="Dashboard Page 3" class="w-full h-auto rounded-xl">
+                </div>
+                <div id="page4" class="dashboard-page">
+                    <img src="{% static 'images/dashboard/dashboard_page4.png' %}" alt="Dashboard Page 4" class="w-full h-auto rounded-xl">
+                </div>
+                <div id="page5" class="dashboard-page">
+                    <img src="{% static 'images/dashboard/dashboard_page5.png' %}" alt="Dashboard Page 5" class="w-full h-auto rounded-xl">
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function scrollToPage(pageId) {
+            // Find the target element by its ID
+            const targetElement = document.getElementById(pageId);
+            
+            // Scroll to the element smoothly
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            // Update active state of buttons
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(pageId + '-tab').classList.add('active');
+        }
+
+        // Add an event listener to update the active tab when the user scrolls manually
+        document.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.dashboard-page');
+            const tabs = document.querySelectorAll('.tab-button');
+            const scrollPosition = window.scrollY;
+
+            sections.forEach((section, index) => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.offsetHeight;
+
+                // Check if the current scroll position is within the section
+                if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                    tabs.forEach(tab => tab.classList.remove('active'));
+                    const currentTab = document.getElementById(section.id + '-tab');
+                    if (currentTab) {
+                        currentTab.classList.add('active');
+                    }
+                }
+            });
+        });
+
+    </script>
+{% endblock %}
