@@ -116,4 +116,8 @@ The explore page expects a list of Restaurant objects in the Django context. For
     'link': '[https://example.com/zomato/sample-cafe](https://example.com/zomato/sample-cafe)' 
 }
 
-Developed with 🌶️ and 💻 for the Pune Food Scene.
+📄 License
+
+Distributed under the MIT License. See LICENSE for more information.
+
+Developed by Tanishka Deshpande with 🌶️ and 💻 for the Pune Food Scene.
